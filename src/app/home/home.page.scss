@@ -25,3 +25,26 @@
 #container a {
   text-decoration: none;
 }
+
+.canvas-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+#progress-bar {
+  border: 1px solid black;
+  background-image: url('../../assets/GameBackground.png');
+  background-size: cover;
+  width: 100%;
+  height: 20%;
+}
+#game-canvas {
+  border: 1px solid black;
+  background-image: url('../../assets/GameBackground.png');
+  background-size: cover;
+  width: 100%;
+  height: 80%;
+}
