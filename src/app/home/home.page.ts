@@ -134,6 +134,13 @@ export class HomePage implements AfterViewInit {
         spriteGoldCoin.setPosition_advanceOneStep();
         spriteGoldCoin.draw(this.gameContext);
       })
+      this.spritesBone.forEach((spriteBone) => {
+        if (spriteBone.isAtEdge) {
+          spriteBone.setPosition_reset(this.gameCanvas.width, this.gameCanvas.height);
+        }
+        spriteBone.setPosition_advanceOneStep();
+        spriteBone.draw(this.gameContext);
+      })
 
       // Detect collision and handle the event
       this.detectCollisions_wRunner();
@@ -164,6 +171,13 @@ export class HomePage implements AfterViewInit {
       spriteGoldCoin.draw(this.gameContext);
 
     })
+    k = 'doggieBone';
+    this.spritesBone = await this.spriteService.getObstacleSprites(this.setUp[k].quantity, k, this.setUp[k].src);
+    this.spritesBone.forEach((spriteBone) => {
+      spriteBone.setPosition_initial(this.gameCanvas.width, this.gameCanvas.height);
+      spriteBone.draw(this.gameContext);
+      
+    })
     this.game_loop();
   }
 
@@ -182,8 +196,14 @@ export class HomePage implements AfterViewInit {
       if (this.isCollision(this.spriteRunner, sprite)) {
         sprite.setPosition_reset(this.gameCanvas.width, this.gameCanvas.height);
         console.log("Huzzah!")
-      }
-    })
+      }   // end IF
+    })    // end FOR
+    this.spritesBone.forEach((sprite) => {
+      if (this.isCollision(this.spriteRunner, sprite)) {
+        sprite.setPosition_reset(this.gameCanvas.width, this.gameCanvas.height);
+        console.log("Huzzah!")
+      }   // end IF
+    })    // end FOR
   }
 
   isCollision(a_sprite: Sprite, b_sprite: Sprite): boolean {
