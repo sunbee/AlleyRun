@@ -178,14 +178,34 @@ export class HomePage implements AfterViewInit {
         spriteBone.draw(this.gameContext);
       })
 
-      // Detect collision and handle the event
-      this.detectCollisions_wRunner();
+      // Detect collision and handle the event.
+      /*
+        Events we need to handle include:
+        1. The runner collides with an obstacle and earns reward/penalty.
+        2. An obstacle sprite reaches the left edge of canvas and reappears from the right edge.
+        3. In the progress bar, dogs catch up with the runner and game ends in failure.
+        4. In the progress bar, runner crosses the rubicon and wins.
+        Futher, the runner is controlled by mouse / sensor.
 
-      // Detect sprite at canvas edge and handle the event
+        The event-handler strategy is different depending on the case. For example, the runner
+        is controlled by listening for the mouse touch up/down/move events. These handlers are
+        set-up in ngAfterViewInit() method.
+        
+        Collisions between runner-obstacles are handled by a detectCollisions_wRunner() method.
+        This method of home component is invoked in each iteration of the game loop.
+        
+        The sprite class checks for edge-reached condition at each position update. This method
+        of sprite is invoked in each iteration of the game loop.
+
+        Collisions in progress bar are handled by isCollision() method w true/false result.
+        This method of home component is invoked in each iteration of the progress bar's loop.
+
+        The isCollision() method checks for collision between any two sprites.
+      */
+      this.detectCollisions_wRunner();
 
     }, this.loopInterval);
     return;
-
   }
 
   public progress_loop() {
@@ -206,7 +226,7 @@ export class HomePage implements AfterViewInit {
       if (this.spriteProRunner.isAtEdge) {
         this.message = "YOU WON!!";
         this.stop_game();
-      } else if (this.detectRunnerFails()) {
+      } else if (this.isCollision(this.spriteProRunner, this.spriteProDogs)) {
         this.message = "YOU DIDN'T MAKE IT!!";
         this.stop_game();
       }
@@ -301,14 +321,6 @@ export class HomePage implements AfterViewInit {
         this.spriteProDogs.penalize();
       }   // end IF
     })    // end FOR
-  }
-
-  public detectRunnerFails(): boolean {
-    if (this.isCollision(this.spriteProRunner, this.spriteProDogs)) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   isCollision(a_sprite: Sprite, b_sprite: Sprite): boolean {
