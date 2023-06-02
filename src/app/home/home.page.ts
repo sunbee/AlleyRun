@@ -4,7 +4,6 @@ import { Sprite, Runner, Obstacle, ProRunner, ProDogs } from '../services/sprite
 import { SpriteService } from '../services/sprite.service';
 import { Router } from '@angular/router';
 import { SharedDataService } from '../services/shared-data.service';
-import { share } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -37,13 +36,13 @@ export class HomePage implements AfterViewInit {
   //
   private gameLoop!: any;
   private progressLoop!: any;
-  private loopInterval: number = 150;
+  private loopInterval: number = 50;
   public message: string = "Press START!"
   public score: number = 0;
   private setUp: any = {
     'garbageBag': {
       'src': 'assets/GarbageBags.png',
-      'quantity': 6,
+      'quantity': 7,
       'speed': -10,
     },
     'goldCoin': {
@@ -53,7 +52,7 @@ export class HomePage implements AfterViewInit {
     },
     'doggieBone': {
       'src': 'assets/DoggieBone.png',
-      'quantity': 7,
+      'quantity': 6,
       'speed': -5
     },
     'runner': {
