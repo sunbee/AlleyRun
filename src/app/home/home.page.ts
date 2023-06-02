@@ -1,7 +1,10 @@
-import { Component, ElementRef, ViewChild, AfterViewInit} from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, OnInit} from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { Sprite, Runner, Obstacle, ProRunner, ProDogs } from '../services/sprite.model';
 import { SpriteService } from '../services/sprite.service';
+import { Router } from '@angular/router';
+import { SharedDataService } from '../services/shared-data.service';
+import { share } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -53,6 +56,9 @@ export class HomePage implements AfterViewInit {
       'quantity': 7,
       'speed': -5
     },
+    'runner': {
+      'src': 'assets/RunnerGuy.png'
+    },
     'proRunner': {
       'src': 'assets/RunnerGuyMini.png',
       'speed': 5
@@ -65,8 +71,17 @@ export class HomePage implements AfterViewInit {
   // Test Macbook
   private isDragging: boolean = false;
     
-  constructor(public spriteService: SpriteService) {}
+  constructor(public sharedData: SharedDataService, public spriteService: SpriteService, public router: Router) {}
 
+  ngOnInit(): void {
+    const selected_runner = this.sharedData.getAttribute('runner');
+    if (selected_runner && selected_runner === 'chick') {
+      this.setUp.proRunner.src = 'assets/RunnerBlondeMini.png';
+      this.setUp.runner.src = 'assets/RunnerBlonde.png';
+      console.log("Blond Chickz Rule! ;)");
+    }
+  }
+  
   ngAfterViewInit(): void {
     this.container = this.containerRef.nativeElement;
     console.log(this.container);
@@ -220,11 +235,13 @@ export class HomePage implements AfterViewInit {
     this.message = "Press START!";
 
     // Obtain runner and render at starting position
-    this.spriteRunner = await this.spriteService.getRunner('assets/RunnerGuy.png');
+    let k = '';
+    k = 'runner';
+    this.spriteRunner = await this.spriteService.getRunner(this.setUp[k].src);
     this.spriteRunner.setPosition_initial(this.gameCanvas.width, this.gameCanvas.height);
     this.spriteRunner.draw(this.gameContext);
     // Obtain obstacles and render at their starting positions
-    let k = 'garbageBag';
+    k = 'garbageBag';
     this.spritesGarbageBag = await this.spriteService.getObstacleSprites(this.setUp[k].quantity, k, this.setUp[k].src);
     this.spritesGarbageBag.forEach((spriteGarbageBag) => {
       spriteGarbageBag.setPosition_initial(this.gameCanvas.width, this.gameCanvas.height);
@@ -303,3 +320,8 @@ export class HomePage implements AfterViewInit {
     );
   }
 }
+
+
+
+
+

@@ -1,0 +1,22 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="dark">
+    <ion-title>Alley Run Game</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Alley Run Game</ion-title>
+  </ion-toolbar>
+  </ion-header>
+  <div class="button-container">
+    <h2>Select Runner</h2><br>
+    <div class="runner-button" (click)="selectRunner('dude')">
+      <img src="assets/RunnerGuy.png" alt="Dude" />
+    </div>
+    <div class="runner-button" (click)="selectRunner('chick')">
+      <img src="assets/RunnerBlonde.png" alt="Chick" />
+    </div>
+  </div>
+</ion-content>
