@@ -90,7 +90,6 @@ export class Obstacle extends Sprite {
             this.x += this.speed;
             this.isAtEdge = false;
         } else {
-            this.x = 0;
             this.isAtEdge = true;
         }
     }
@@ -100,4 +99,46 @@ export class Obstacle extends Sprite {
         this.y = Math.random() * (canvasHeight - this.height);
         this.isAtEdge = false;
     }
-}
+};
+
+export class ProRunner extends Runner {
+    public speed: number = 5;
+    public isAtEdge: boolean = false;
+
+    constructor(sprite_image: HTMLImageElement, sprite_width: number, sprite_height: number) {
+        super(sprite_image, sprite_width, sprite_height);
+    }
+
+    override setPosition_initial(canvasWidth: number, canvasHeight: number) {
+        this.x = 0.3 * (canvasWidth - this.width);
+        this.y = 0.5 * (canvasHeight - this.height);
+        this.isAtEdge = false;
+    }
+
+    public setPosition_advanceOneStep() {
+        if (this.x + this.speed > 0) {
+            this.x += this.speed;
+            this.isAtEdge = false;
+        } else {
+            this.isAtEdge = true;
+        }
+    }
+};
+
+export class ProDogs extends ProRunner {
+    constructor(sprite_image: HTMLImageElement, sprite_width: number, sprite_height: number) {
+        super(sprite_image, sprite_width, sprite_height);
+    }
+
+    override setPosition_initial(canvasWidth: number, canvasHeight: number) {
+        this.x = 0;
+        this.y = 0.5 * (canvasHeight - this.height);
+        this.isAtEdge = false;
+    }
+
+    public penalize() {
+        if (this.speed > 1) {
+            this.speed -= 1;
+        }
+    }
+};

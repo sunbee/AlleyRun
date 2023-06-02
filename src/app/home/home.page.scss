@@ -31,17 +31,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
   height: 100%;
 }
 
-#progress-bar {
+.progress-bar {
   border: 1px solid black;
-  background-image: url('../../assets/GameBackground.png');
+  background-image: url('../../assets/RunningBar_Background.png');
   background-size: cover;
   width: 100%;
-  height: 20%;
+  height: 10%;
 }
-#game-canvas {
+.game-canvas {
   border: 1px solid black;
   background-image: url('../../assets/GameBackground.png');
   background-size: cover;

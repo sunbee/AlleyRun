@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Sprite, Runner, Obstacle } from './sprite.model';
+import { Sprite, Runner, Obstacle, ProRunner, ProDogs } from './sprite.model';
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +37,7 @@ export class SpriteService {
   async getRunner(image_src: string): Promise<Runner> {
     return new Promise((resolve) => {
       const runner_image = new Image();
-      runner_image.src = 'assets/RunnerGuy.png';
+      runner_image.src = image_src;
       runner_image.onload = () => {
         console.log("Voici Runner!");
         const width = runner_image.width;
@@ -45,6 +45,35 @@ export class SpriteService {
         const runner = new Runner(runner_image, width, height);
         resolve(runner);
       }
+    })
+  }
+
+  async getProRunner(image_src: string): Promise<ProRunner> {
+    return new Promise((resolve) => {
+      const proRunner_image = new Image();
+      proRunner_image.src = image_src;
+      proRunner_image.onload = () => {
+        console.log("Voici Progress-Bar Runner!");
+        const width = proRunner_image.width;
+        const height = proRunner_image.height;
+        const spriteProRunner = new ProRunner(proRunner_image, width, height);
+        resolve(spriteProRunner);
+      }
+    })
+  }
+
+  async getProDogs(image_src: string): Promise<ProDogs> {
+    return new Promise((resolve) => {
+      const proDogs_image = new Image();
+      proDogs_image.src = image_src;
+      proDogs_image.onload = () => {
+        console.log("Voice Progress-Bar Dogs!");
+        const width = proDogs_image.width;
+        const height = proDogs_image.height;
+        const sprite_proDogs = new ProDogs(proDogs_image, width, height);
+        resolve(sprite_proDogs)
+      }
+
     })
   }
 }

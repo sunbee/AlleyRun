@@ -1,8 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewInit} from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { Sprite, Runner, Obstacle } from '../services/sprite.model';
+import { Sprite, Runner, Obstacle, ProRunner, ProDogs } from '../services/sprite.model';
 import { SpriteService } from '../services/sprite.service';
-import { isSubscription } from 'rxjs/internal/Subscription';
 
 @Component({
   selector: 'app-home',
@@ -14,7 +13,7 @@ import { isSubscription } from 'rxjs/internal/Subscription';
 export class HomePage implements AfterViewInit {
   @ViewChild ('container', { static: true}) containerRef!: ElementRef;
   @ViewChild('gameCanvas', { static: true }) gameCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('progressBar', { static: true }) progressBarRef!: ElementRef;
+  @ViewChild('progressBar', { static: true }) progressBarRef!: ElementRef<HTMLCanvasElement>;
 
   // View Elements
   private container!: HTMLDivElement;
@@ -23,20 +22,19 @@ export class HomePage implements AfterViewInit {
   private progressContext!: CanvasRenderingContext2D;
   private gameContext!: CanvasRenderingContext2D;
   // Images for View Elements
-  private progressBackground!: HTMLImageElement;
+  private progressBackgroundImage!: HTMLImageElement;
   private gameBackgroundImage!: HTMLImageElement;
-  private runnerImage!: HTMLImageElement;
-  private garbageBagImage!: HTMLImageElement;
-  private goldCoinImage!: HTMLImageElement;
-  private boneImage!: HTMLImageElement;
   // Sprite Objects 
-  private frame: number = 0;
   private spriteRunner!: Runner;
   private spritesGarbageBag: Obstacle[] = [];
   private spritesGoldCoin: Obstacle[] = [];
   private spritesBone: Obstacle[] = [];
+  private spriteProRunner!: ProRunner;
+  private spriteProDogs!: ProDogs;
   //
   private gameLoop!: any;
+  private progressLoop!: any;
+  private loopInterval: number = 150;
   public score: number = 0;
   private setUp: any = {
     'garbageBag': {
@@ -53,6 +51,14 @@ export class HomePage implements AfterViewInit {
       'src': 'assets/DoggieBone.png',
       'quantity': 10,
       'speed': -5
+    },
+    'proRunner': {
+      'src': 'assets/RunnerGuyMini.png',
+      'speed': 5
+    },
+    'proDogs': {
+      'src': 'assets/Dogs.png',
+      'speed': 5,
     }
   }
   // Test Macbook
@@ -63,7 +69,7 @@ export class HomePage implements AfterViewInit {
   ngAfterViewInit(): void {
     this.container = this.containerRef.nativeElement;
     console.log(this.container);
-    this.progressBar = this.gameCanvasRef.nativeElement;
+    this.progressBar = this.progressBarRef.nativeElement;
     this.gameCanvas = this.gameCanvasRef.nativeElement;
     console.log(this.gameCanvas)
 
@@ -79,7 +85,7 @@ export class HomePage implements AfterViewInit {
           this.gameCanvas.width = this.gameBackgroundImage.width;
           this.gameCanvas.height = this.gameBackgroundImage.height;
           this.gameContext.drawImage(this.gameBackgroundImage, 0, 0);
-        };
+        }; // end onload
 
         this.gameCanvas.addEventListener('mousedown', (event: MouseEvent) => {
           this.isDragging = true;
@@ -95,14 +101,31 @@ export class HomePage implements AfterViewInit {
           this.isDragging = false;
         });
 
-        // Set up and launch
-        this.start_game();
-        
+        if (this.progressBar instanceof(HTMLCanvasElement)) {
+          this.progressContext = this.progressBar.getContext('2d') as CanvasRenderingContext2D;
+
+          if (this.progressContext) {
+            this.progressBackgroundImage = new Image();
+            this.progressBackgroundImage.src = "assets/RunningBar_Background.png";
+            this.progressBackgroundImage.onload = () => {
+              this.progressBar.width =  this.progressBackgroundImage.width;
+              this.progressBar.height = this.progressBackgroundImage.height;
+              this.progressContext.drawImage(this.progressBackgroundImage, 0, 0)
+            };
+
+             // Set up and launch
+            this.start_game();
+          } else {
+            console.error("GOT NO 2D RENDERING CONTEXT FOR PROGRESS BAR!")
+          }
+        } else {
+          console.error("FOUND NO CANVAS ELEMENT FOR PROGRESS BAR!")
+        }      
       } else {
-        console.error('Failed to get 2D rendering context for canvas');
+        console.error('GOT NO 2D RENDERING CONTEXT FOR MAIN CANVAS!');
       }
     } else {
-      console.error('Canvas element not found');
+      console.error('FOUND NO CANVAS ELEMENT FOR GAME!');
     } 
 
   }
@@ -117,7 +140,7 @@ export class HomePage implements AfterViewInit {
       // Render background
       this.gameContext.drawImage(this.gameBackgroundImage, 0, 0);
 
-      // Render runner and sprites
+      // Render runner and sprites after updating position 
       this.spriteRunner.draw(this.gameContext);
 
       this.spritesGarbageBag.forEach((spriteGarbageBag) => {
@@ -147,17 +170,49 @@ export class HomePage implements AfterViewInit {
 
       // Detect sprite at canvas edge and handle the event
 
-    }, 200);
+    }, this.loopInterval);
     return;
 
   }
 
+  public progress_loop() {
+    this.progressLoop = setInterval(() => {
+      // Clear canvas
+      this.progressContext.clearRect(0, 0, this.progressBar.width, this.progressBar.height);
+
+      // Render canvas
+      this.progressContext.drawImage(this.progressBackgroundImage, 0, 0);
+
+      // Render runner and dogs
+      this.spriteProDogs.setPosition_advanceOneStep();
+      this.spriteProRunner.setPosition_advanceOneStep();
+      this.spriteProDogs.draw(this.progressContext);
+      this.spriteProRunner.draw(this.progressContext);
+
+    }, this.loopInterval*10);
+
+  }
+
   async start_game() {
-    // Set up and launch
+    /* 
+    Set up and launch
+
+    For main canvas, proceed as follows:
+    1. Obtain sprites using the service
+    2. Initialize each sprite's starting position
+    3. Render on main canvas
+
+    For progress bar, proceed as follows:
+    1. Obtain the sprites using the service
+    2. Initialize each sprite's starting position
+    3. Render on canvas for progress bar
+    */
+
+    // Obtain runner and render at starting position
     this.spriteRunner = await this.spriteService.getRunner('assets/RunnerGuy.png');
     this.spriteRunner.setPosition_initial(this.gameCanvas.width, this.gameCanvas.height);
     this.spriteRunner.draw(this.gameContext);
-
+    // Obtain obstacles and render at their starting positions
     let k = 'garbageBag';
     this.spritesGarbageBag = await this.spriteService.getObstacleSprites(this.setUp[k].quantity, k, this.setUp[k].src);
     this.spritesGarbageBag.forEach((spriteGarbageBag) => {
@@ -169,23 +224,32 @@ export class HomePage implements AfterViewInit {
     this.spritesGoldCoin.forEach((spriteGoldCoin) => {
       spriteGoldCoin.setPosition_initial(this.gameCanvas.width, this.gameCanvas.height);
       spriteGoldCoin.draw(this.gameContext);
-
     })
     k = 'doggieBone';
     this.spritesBone = await this.spriteService.getObstacleSprites(this.setUp[k].quantity, k, this.setUp[k].src);
     this.spritesBone.forEach((spriteBone) => {
       spriteBone.setPosition_initial(this.gameCanvas.width, this.gameCanvas.height);
       spriteBone.draw(this.gameContext);
-      
     })
+    // Obtain sprites for progress bar and render at their starting positions
+    k = 'proRunner';
+    this.spriteProRunner = await this.spriteService.getProRunner(this.setUp[k].src);
+    this.spriteProRunner.setPosition_initial(this.progressBar.width, this.progressBar.height);
+    this.spriteProRunner.draw(this.progressContext);
+    k = 'proDogs';
+    this.spriteProDogs = await this.spriteService.getProDogs(this.setUp[k].src);
+    this.spriteProDogs.setPosition_initial(this.progressBar.width, this.progressBar.height);
+    this.spriteProDogs.draw(this.progressContext);
+
     this.game_loop();
+    this.progress_loop();
   }
 
   stop_game() {
     return;
   }
 
-  detectCollisions_wRunner() {
+  detectCollisions_wRunner() { // advance score and penalize dogs
     this.spritesGarbageBag.forEach((sprite) => {
       if (this.isCollision(this.spriteRunner, sprite)) {
         sprite.setPosition_reset(this.gameCanvas.width, this.gameCanvas.height);
