@@ -1,8 +1,14 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="dark">
     <ion-title>
       Alley Run Game
     </ion-title>
+    <ion-buttons slot="start">
+      <ion-button (click)="start_game()">Start</ion-button>
+      <ion-button (click)="stop_game()">Quit</ion-button>
+    </ion-buttons>
+    <ion-label slot="end" class="score-display">{{ message }}</ion-label>
+    <ion-label slot="end" class="score-display">{{ score }}</ion-label>
   </ion-toolbar>
 </ion-header>
 

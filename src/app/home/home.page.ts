@@ -35,11 +35,12 @@ export class HomePage implements AfterViewInit {
   private gameLoop!: any;
   private progressLoop!: any;
   private loopInterval: number = 150;
+  public message: string = "Press START!"
   public score: number = 0;
   private setUp: any = {
     'garbageBag': {
       'src': 'assets/GarbageBags.png',
-      'quantity': 3,
+      'quantity': 6,
       'speed': -10,
     },
     'goldCoin': {
@@ -49,7 +50,7 @@ export class HomePage implements AfterViewInit {
     },
     'doggieBone': {
       'src': 'assets/DoggieBone.png',
-      'quantity': 10,
+      'quantity': 7,
       'speed': -5
     },
     'proRunner': {
@@ -89,17 +90,17 @@ export class HomePage implements AfterViewInit {
 
         this.gameCanvas.addEventListener('mousedown', (event: MouseEvent) => {
           this.isDragging = true;
-        });
+        }); // end event-handler mouseDn
 
         this.gameCanvas.addEventListener('mousemove', (event:MouseEvent)=>  {
           if (!this.isDragging) return;
           const canvasRect = this.gameCanvas.getBoundingClientRect();
           this.spriteRunner.y = event.clientY -  canvasRect.top;
-        });
+        }); // end event-handler mouseMv
 
         this.gameCanvas.addEventListener('mouseup', (event: MouseEvent) => {
           this.isDragging = false;
-        });
+        }); // end event-handler mouseUp
 
         if (this.progressBar instanceof(HTMLCanvasElement)) {
           this.progressContext = this.progressBar.getContext('2d') as CanvasRenderingContext2D;
@@ -112,23 +113,20 @@ export class HomePage implements AfterViewInit {
               this.progressBar.height = this.progressBackgroundImage.height;
               this.progressContext.drawImage(this.progressBackgroundImage, 0, 0)
             };
-
-             // Set up and launch
-            this.start_game();
           } else {
             console.error("GOT NO 2D RENDERING CONTEXT FOR PROGRESS BAR!")
-          }
+          } // end if-else progress-bar's context
         } else {
           console.error("FOUND NO CANVAS ELEMENT FOR PROGRESS BAR!")
-        }      
+        } // end if-else progress-bar element
       } else {
         console.error('GOT NO 2D RENDERING CONTEXT FOR MAIN CANVAS!');
-      }
+      } // end if-else canvas context
     } else {
       console.error('FOUND NO CANVAS ELEMENT FOR GAME!');
-    } 
+    } // end if-else canvas element
 
-  }
+  } // end ngAfterViewInit interface
 
   // game_loop
   public game_loop = () => {
@@ -184,11 +182,19 @@ export class HomePage implements AfterViewInit {
       this.progressContext.drawImage(this.progressBackgroundImage, 0, 0);
 
       // Render runner and dogs
-      this.spriteProDogs.setPosition_advanceOneStep();
-      this.spriteProRunner.setPosition_advanceOneStep();
+      this.spriteProDogs.setPosition_advanceOneStep(this.progressBar.width, this.progressBar.height);
+      this.spriteProRunner.setPosition_advanceOneStep(this.progressBar.width, this.progressBar.height);
       this.spriteProDogs.draw(this.progressContext);
       this.spriteProRunner.draw(this.progressContext);
 
+      // End conditions
+      if (this.spriteProRunner.isAtEdge) {
+        this.message = "YOU WON!!";
+        this.stop_game();
+      } else if (this.detectRunnerFails()) {
+        this.message = "YOU DIDN'T MAKE IT!!";
+        this.stop_game();
+      }
     }, this.loopInterval*10);
 
   }
@@ -207,6 +213,11 @@ export class HomePage implements AfterViewInit {
     2. Initialize each sprite's starting position
     3. Render on canvas for progress bar
     */
+    // Initialize
+    if (this.gameLoop) clearInterval(this.gameLoop);
+    if (this.progressLoop) clearInterval (this.progressLoop);
+    this.score = 0;
+    this.message = "Press START!";
 
     // Obtain runner and render at starting position
     this.spriteRunner = await this.spriteService.getRunner('assets/RunnerGuy.png');
@@ -246,28 +257,41 @@ export class HomePage implements AfterViewInit {
   }
 
   stop_game() {
+    clearInterval(this.gameLoop);
+    clearInterval(this.progressLoop);
     return;
   }
 
-  detectCollisions_wRunner() { // advance score and penalize dogs
+  detectCollisions_wRunner() { // detect runner's collisions and reward or penalize
     this.spritesGarbageBag.forEach((sprite) => {
       if (this.isCollision(this.spriteRunner, sprite)) {
+        this.message = "OUCH!!";
         sprite.setPosition_reset(this.gameCanvas.width, this.gameCanvas.height);
-        console.log("OUCH!!");
+        this.spriteProRunner.penalize();
       }   // end IF
     })    // end FOR
     this.spritesGoldCoin.forEach((sprite) => {
       if (this.isCollision(this.spriteRunner, sprite)) {
+        this.message = "HUZZAH!";
         sprite.setPosition_reset(this.gameCanvas.width, this.gameCanvas.height);
-        console.log("Huzzah!")
+        this.score += 25;
       }   // end IF
     })    // end FOR
-    this.spritesBone.forEach((sprite) => {
+    this.spritesBone.forEach((sprite) => {      
       if (this.isCollision(this.spriteRunner, sprite)) {
+        this.message = "DOGGONE!";
         sprite.setPosition_reset(this.gameCanvas.width, this.gameCanvas.height);
-        console.log("Huzzah!")
+        this.spriteProDogs.penalize();
       }   // end IF
     })    // end FOR
+  }
+
+  public detectRunnerFails(): boolean {
+    if (this.isCollision(this.spriteProRunner, this.spriteProDogs)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   isCollision(a_sprite: Sprite, b_sprite: Sprite): boolean {
