@@ -4,6 +4,7 @@ import { Sprite, Runner, Obstacle, ProRunner, ProDogs } from '../services/sprite
 import { SpriteService } from '../services/sprite.service';
 import { Router } from '@angular/router';
 import { SharedDataService } from '../services/shared-data.service';
+import { Motion, AccelListenerEvent } from '@capacitor/motion';
 
 @Component({
   selector: 'app-home',
@@ -37,8 +38,9 @@ export class HomePage implements AfterViewInit {
   private gameLoop!: any;
   private progressLoop!: any;
   private loopInterval: number = 50;
-  public message: string = "Press START!"
+  public message: string = "Press START!";
   public score: number = 0;
+  public xyz: string = 'x?, y?, z?';
   private setUp: any = {
     'garbageBag': {
       'src': 'assets/GarbageBags.png',
@@ -81,7 +83,7 @@ export class HomePage implements AfterViewInit {
     }
   }
   
-  ngAfterViewInit(): void {
+  async ngAfterViewInit(): Promise<void> {
     this.container = this.containerRef.nativeElement;
     console.log(this.container);
     this.progressBar = this.progressBarRef.nativeElement;
@@ -101,6 +103,21 @@ export class HomePage implements AfterViewInit {
           this.gameCanvas.height = this.gameBackgroundImage.height;
           this.gameContext.drawImage(this.gameBackgroundImage, 0, 0);
         }; // end onload
+
+        // Render runner
+        // Obtain runner and render at starting position
+        let k = '';
+        k = 'runner';
+        this.spriteRunner = await this.spriteService.getRunner(this.setUp[k].src);
+        this.spriteRunner.setPosition_initial(this.gameCanvas.width, this.gameCanvas.height);
+        this.spriteRunner.draw(this.gameContext);
+
+        Motion.addListener('accel', (event: AccelListenerEvent) => {
+          const acceleration = event.acceleration;
+          console.log('Acceleration:', acceleration.y);
+          this.spriteRunner.y += acceleration.y * 20;
+          this.xyz = 'x' + acceleration.x + ', y' + acceleration.y + ', z' + acceleration.z;
+        });
 
         this.gameCanvas.addEventListener('mousedown', (event: MouseEvent) => {
           this.isDragging = true;
@@ -253,12 +270,9 @@ export class HomePage implements AfterViewInit {
     this.score = 0;
     this.message = "Press START!";
 
-    // Obtain runner and render at starting position
+    // Runner is already there
     let k = '';
-    k = 'runner';
-    this.spriteRunner = await this.spriteService.getRunner(this.setUp[k].src);
-    this.spriteRunner.setPosition_initial(this.gameCanvas.width, this.gameCanvas.height);
-    this.spriteRunner.draw(this.gameContext);
+
     // Obtain obstacles and render at their starting positions
     k = 'garbageBag';
     this.spritesGarbageBag = await this.spriteService.getObstacleSprites(this.setUp[k].quantity, k, this.setUp[k].src);
